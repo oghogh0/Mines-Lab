@@ -1,4 +1,4 @@
-<h1>Image Processing Lab</h1>
+<h1>Mines Lab</h1>
 <h2>Description</h2>
 Mines is a game played on a rectangular n×m board (where n = num of rows and m = num of cols), covered with 1×1 square tiles. Some of these tiles hide secretly buried mines; all the other squares are safe. On each turn, the player removes one tile. The player wins when all safe tiles have been removed, without revealing a single mine, and loses if a mine is revealed. When a safe square is revealed, that square is additionally inscribed with a number between 0 and 8, indicating the number of surrounding mines (when rendering the board, 0 is replaced by a blank). Additionally, any time a 0 is revealed (a square surrounded by no mines), the surrounding squares are also automatically revealed, as they are safe).<br />
 
@@ -52,7 +52,7 @@ This function returns state of the game. There are 3 game states: 'ongoing', 'de
 <br/>
 <p align="left">
 Implement HYPERMINES game:<br/>
-There are 4 functions involved in doing so, including: <br/>
+There are 3 functions involved in doing so, including: <br/>
 
 1. new_game_nd: this function starts a new game and returns a game state dictionary, with the keys having values that are adequately initialised. The inputs are the game dimensions and the position of the bombs. <br/>
 
@@ -107,7 +107,7 @@ g = {
      'state': 'ongoing'<br/>
      }<br/>
 <br/>
-dig_nd(g, (0, 0, 1)) returns 1<br/>
+ Calling dig_nd(g, (0, 0, 1)) returns 1<br/>
 
 dump(g) shows the game state:<br/>
 board:
@@ -142,40 +142,31 @@ state: defeat
                 game["state"] = game_state(game)  # reassigns esp for victory case
             return counter
 
+<br/>
+3. render_nd: this function prepares the game for display. It returns an N-dimensional array of strings (nested lists). These could be: '_' (hidden squares), '.' (bombs), ' ' (empty squares), or '1', '2', etc. (squares neighbouring bombs). The game['hidden'] array indicates which squares should be hidden. It is given an input boolean value, xray. If xray is True (the default is False), the game['hidden'] array is ignored and all cells (tiles) are shown, otherwise only the ones allowed as instructed are revealed.. <br/>
 
-def render_nd(game, xray=False):
-    """
-    Prepare the game for display.
+For example, given this game: <br/>
+g = {<br/>
+    'dimensions': (2, 4, 2),<br/>
+    'board': [[[3, '.'], [3, 3], [1, 1], [0, 0]],<br/>
+             [['.', 3], [3, '.'], [1, 1], [0, 0]]],<br/>
+    'hidden': [[[True, True], [True, False], [False, False],<br/>
+              [False, False]],<br/>
+              [[True, True], [True, True], [False, False],<br/>
+              [False, False]]],<br/>
+    'state': 'ongoing'<br/>
+    }<br/>
+    
+Calling render_nd(g, False) returns:<br/>
 
-    Returns an N-dimensional array (nested lists) of '_' (hidden squares), '.'
-    (bombs), ' ' (empty squares), or '1', '2', etc. (squares neighboring
-    bombs).  The game['hidden'] array indicates which squares should be
-    hidden.  If xray is True (the default is False), the game['hidden'] array
-    is ignored and all cells are shown.
+[[['_', '_'], ['_', '3'], ['1', '1'], [' ', ' ']],
+ [['_', '_'], ['_', '_'], ['1', '1'], [' ', ' ']]]
 
-    Args:
-       xray (bool): Whether to reveal all tiles or just the ones allowed by
-                    game['hidden']
+Calling render_nd(g, True) returns: <br/>
+[[['3', '.'], ['3', '3'], ['1', '1'], [' ', ' ']],
+ [['.', '3'], ['3', '.'], ['1', '1'], [' ', ' ']]]
+<br/>
 
-    Returns:
-       An n-dimensional array of strings (nested lists)
-
-    >>> g = {'dimensions': (2, 4, 2),
-    ...      'board': [[[3, '.'], [3, 3], [1, 1], [0, 0]],
-    ...                [['.', 3], [3, '.'], [1, 1], [0, 0]]],
-    ...      'hidden': [[[True, True], [True, False], [False, False],
-    ...                [False, False]],
-    ...               [[True, True], [True, True], [False, False],
-    ...                [False, False]]],
-    ...      'state': 'ongoing'}
-    >>> render_nd(g, False)
-    [[['_', '_'], ['_', '3'], ['1', '1'], [' ', ' ']],
-     [['_', '_'], ['_', '_'], ['1', '1'], [' ', ' ']]]
-
-    >>> render_nd(g, True)
-    [[['3', '.'], ['3', '3'], ['1', '1'], [' ', ' ']],
-     [['.', '3'], ['3', '.'], ['1', '1'], [' ', ' ']]]
-    """
     rendered_layout = create_nd_array(game["dimensions"], " ")
 
     for coord in get_coordinates(game["dimensions"]):
