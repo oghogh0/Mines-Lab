@@ -2,6 +2,8 @@
 <h2>Description</h2>
 Mines is a game played on a rectangular n×m board (where n = num of rows and m = num of cols), covered with 1×1 square tiles. Some of these tiles hide secretly buried mines; all the other squares are safe. On each turn, the player removes one tile. The player wins when all safe tiles have been removed, without revealing a single mine, and loses if a mine is revealed. When a safe square is revealed, that square is additionally inscribed with a number between 0 and 8, indicating the number of surrounding mines (when rendering the board, 0 is replaced by a blank). Additionally, any time a 0 is revealed (a square surrounded by no mines), the surrounding squares are also automatically revealed, as they are safe).<br />
 
+Initially, the lab considered only 2-D arrays before expanding to N-D arrays. After implementing some functions with multiple for loops and realise how unfeasible that would be for an N-D array, I rewrote my code recursively.<br />
+
 <h2>Languages and Environments Used</h2>
 
 - <b>Python</b> 
@@ -18,11 +20,14 @@ Create useful HELPER FUNCTIONS:<br/>
 5. get_neighbours: returns a list of all neighbouring coordinates of the given coordinate.<br/>
 
 
+<p align="left">
+Create function to determine the GAME STATE:<br/>
+This function returns state of the game. There are 3 game states: 'ongoing', 'defeat', or 'victory'. The state of an ongoing game is represented as a dictionary consisting of 4 keys:<br/>
+- 'dimensions': (nrows, ncolumns).<br/>
+- 'board': an n-dimensional array of integers and strings, implemented using nested lists --> game['board'][r][c] is '.' if square (r,c) contains a bomb, and it is a number indicating the number of neighbouring bombs otherwise.<br/>
+- 'hidden': an n-dimensional array of Booleans, implemented using nested lists --> game['hidden'][r][c] indicates whether the contents of square (r,c) are hidden to the player.<br/>
+- 'state': a string containing the state of the game.<br/>
 
-def game_state(game):
-    """
-    Returns state of the game: 'ongoing', 'defeat', or 'victory'
-    """
     count_bomb = 0
     count_revealed = 0
     count_squares = 0
@@ -43,3 +48,6 @@ def game_state(game):
         return "victory"
     else:
         return "ongoing"
+
+<p align="left">
+Implement HYPERMINES game:<br/>
