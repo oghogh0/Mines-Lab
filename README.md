@@ -19,7 +19,7 @@ Create useful HELPER FUNCTIONS:<br/>
 4. get_coordinates: returns all possible coords in a given board.<br/>
 5. get_neighbours: returns a list of all neighbouring coordinates of the given coordinate.<br/>
 
-
+<br/>
 <p align="left">
 Create function to determine the GAME STATE:<br/>
 This function returns state of the game. There are 3 game states: 'ongoing', 'defeat', or 'victory'. The state of an ongoing game is represented as a dictionary consisting of 4 keys:<br/>
@@ -49,5 +49,150 @@ This function returns state of the game. There are 3 game states: 'ongoing', 'de
     else:
         return "ongoing"
 
+<br/>
 <p align="left">
 Implement HYPERMINES game:<br/>
+There are 4 functions involved in doing so, including: <br/>
+
+1. new_game_nd: this function starts a new game and returns a game state dictionary, with the keys having values that are adequately initialised. The inputs are the game dimensions and the position of the bombs. <br/>
+
+For example: <br/>
+Calling new_game_nd((2, 4, 2), [(0, 0, 1), (1, 0, 0), (1, 1, 1)]) should return this dictionary.<br/>
+<br/>
+{<br/>
+board: [[3, '.'], [3, 3], [1, 1], [0, 0]]
+        [['.', 3], [3, '.'], [1, 1], [0, 0]],<br/>
+dimensions: (2, 4, 2),<br/>
+hidden: [[True, True], [True, True], [True, True], [True, True]]
+        [[True, True], [True, True], [True, True], [True, True]], <br/>
+state: ongoing<br/>
+}
+
+    board_array = create_nd_array(dimensions, 0)  # create array of 0
+
+    for coord in get_coordinates(dimensions):
+        if coord in bombs:
+            new_board_array = replace_coordinate_value(
+                board_array, coord, "."
+            )  # assign bombs
+            for neighbour in get_neighbours(dimensions, coord):  # bomb neighbours
+                if neighbour != coord:  # get_neighbours includes coord
+                    neighbour_val = get_coordinate_value(new_board_array, neighbour)
+                    if isinstance(neighbour_val, int):  # not bomb
+                        neighbour_val += 1
+                        replace_coordinate_value(
+                            board_array, neighbour, neighbour_val
+                        )  # updates val
+
+    return {
+        "dimensions": dimensions,
+        "board": board_array,
+        "hidden": create_nd_array(dimensions, True),
+        "state": "ongoing",
+    }
+<br/>
+
+2. dig_nd: this function recursively digs up square at coordinates and its neighboring squares. Also,  it updates 'hidden' to reveal square at coordinates; then recursively reveal its neighbours, as long as coordinates does not contain and is not adjacent to a
+bomb. As well as updating the state to 'defeat' when at least one bomb is revealed on the board after digging, or 'victory' when all squares are safe and no bombs are revealed, and 'ongoing' otherwise. It should return the number of squares revealed. If the incoming game state is not 'ongoing', no action should be taken and 0 returned. <br/>
+
+For example, given this game: <br/>
+g = {
+     'dimensions': (2, 4, 2), <br/>
+     'board': [[[3, '.'], [3, 3], [1, 1], [0, 0]],<br/>
+               [['.', 3], [3, '.'], [1, 1], [0, 0]]],<br/>
+     'hidden': [[[True, True], [True, False], [True, True],
+               [True, True]],<br/>
+               [[True, True], [True, True], [True, True],<br/>
+               [True, True]]],<br/>
+     'state': 'ongoing'<br/>
+     }<br/>
+<br/>
+dig_nd(g, (0, 0, 1)) returns 1<br/>
+
+dump(g) shows the game state:<br/>
+board:
+    [[3, '.'], [3, 3], [1, 1], [0, 0]]
+    [['.', 3], [3, '.'], [1, 1], [0, 0]]
+dimensions: (2, 4, 2)
+hidden:
+    [[True, False], [True, False], [True, True], [True, True]]
+    [[True, True], [True, True], [True, True], [True, True]]
+state: defeat
+<br/>
+    
+    if (game["state"] != "ongoing"
+        or get_coordinate_value(game["hidden"], coordinates) == False):  # when nothing is revealed
+        return 0
+    else:
+        value = get_coordinate_value(game["board"], coordinates)
+        replace_coordinate_value(game["hidden"], coordinates, False)  # revealed
+
+        if value != 0 and isinstance(value, int):
+            if previous_val != 0:  # only victory check for non-recursive case
+                game["state"] = game_state(game)  # updates esp for victory
+            return 1
+        elif value == ".":
+            game["state"] = "defeat"
+            return 1
+        else:  # 0
+            counter = 1
+            for neighbour in get_neighbours(game["dimensions"], coordinates):  # digs only hidden
+                counter += dig_nd(game, neighbour, previous_val=0)
+            if previous_val != 0:  # only victory check for non-recursive case - saves time
+                game["state"] = game_state(game)  # reassigns esp for victory case
+            return counter
+
+
+def render_nd(game, xray=False):
+    """
+    Prepare the game for display.
+
+    Returns an N-dimensional array (nested lists) of '_' (hidden squares), '.'
+    (bombs), ' ' (empty squares), or '1', '2', etc. (squares neighboring
+    bombs).  The game['hidden'] array indicates which squares should be
+    hidden.  If xray is True (the default is False), the game['hidden'] array
+    is ignored and all cells are shown.
+
+    Args:
+       xray (bool): Whether to reveal all tiles or just the ones allowed by
+                    game['hidden']
+
+    Returns:
+       An n-dimensional array of strings (nested lists)
+
+    >>> g = {'dimensions': (2, 4, 2),
+    ...      'board': [[[3, '.'], [3, 3], [1, 1], [0, 0]],
+    ...                [['.', 3], [3, '.'], [1, 1], [0, 0]]],
+    ...      'hidden': [[[True, True], [True, False], [False, False],
+    ...                [False, False]],
+    ...               [[True, True], [True, True], [False, False],
+    ...                [False, False]]],
+    ...      'state': 'ongoing'}
+    >>> render_nd(g, False)
+    [[['_', '_'], ['_', '3'], ['1', '1'], [' ', ' ']],
+     [['_', '_'], ['_', '_'], ['1', '1'], [' ', ' ']]]
+
+    >>> render_nd(g, True)
+    [[['3', '.'], ['3', '3'], ['1', '1'], [' ', ' ']],
+     [['.', '3'], ['3', '.'], ['1', '1'], [' ', ' ']]]
+    """
+    rendered_layout = create_nd_array(game["dimensions"], " ")
+
+    for coord in get_coordinates(game["dimensions"]):
+        coord_val = get_coordinate_value(game["board"], coord)
+
+        if xray == False:
+            if get_coordinate_value(game["hidden"], coord) == True:
+                replace_coordinate_value(rendered_layout, coord, "_")
+            elif coord_val == ".":  # bomb case
+                replace_coordinate_value(rendered_layout, coord, ".")
+            else:
+                if (isinstance(coord_val, int) 
+                    and coord_val > 0):  # compare 2 ints so check it's an int
+                    replace_coordinate_value(rendered_layout, coord, str(coord_val))
+        else:
+            if coord_val == ".":
+                replace_coordinate_value(rendered_layout, coord, ".")
+            elif isinstance(coord_val, int) and coord_val > 0:
+                replace_coordinate_value(rendered_layout, coord, str(coord_val))
+    return rendered_layout
